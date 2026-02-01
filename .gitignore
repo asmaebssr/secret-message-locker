@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+
+# ansible
+infra/ansible/group_vars/*.yml

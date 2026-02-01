@@ -35,7 +35,12 @@ export default function Home() {
       }
 
       const data = await res.json();
-      setLink(data.link);
+      const fullLink = data.link.startsWith("http")
+      ? data.link
+      : `${window.location.origin}${data.link}`;
+
+      setLink(fullLink);
+
       setMessage("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -45,16 +50,31 @@ export default function Home() {
   };
 
   const copyToClipboard = async () => {
-    if (link) {
+    if (!link) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(link);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+        return;
       } catch (err) {
-        console.error("Failed to copy:", err);
+        console.warn("Clipboard API failed, falling back", err);
       }
     }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = link;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    
   };
+
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">

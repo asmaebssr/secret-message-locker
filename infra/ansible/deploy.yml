@@ -52,14 +52,14 @@
     - name: Pull Secret Message Locker image
       community.docker.docker_image:
         name: mikassaa/secret-message-locker
-        tag: latest
+        tag: v3
         source: pull
         docker_host: "{{ docker_host }}"
 
     - name: Run Secret Message Locker container
       community.docker.docker_container:
         name: secret-message-app
-        image: mikassaa/secret-message-locker:latest
+        image: mikassaa/secret-message-locker:v3
         state: started
         restart_policy: always
         ports:

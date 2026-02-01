@@ -3,7 +3,10 @@ import { randomUUID } from "crypto";
 import { supabase } from "@/lib/db";
 import { encrypt } from "@/lib/crypto/aesGcm";
 
+// Master key for encryption
 const MASTER_KEY = Buffer.from(process.env.MASTER_KEY!, "hex");
+
+const PUBLIC_HOST = process.env.NEXT_PUBLIC_HOST || "http://localhost:3000";
 
 export default async function handler(
   req: NextApiRequest,
@@ -24,22 +27,19 @@ export default async function handler(
   }
 
   let expiresAt: string | null = null;
-
   if (mode === "time") {
     if (!ttl || typeof ttl !== "number") {
       return res.status(400).json({ error: "Invalid TTL" });
     }
-
-    expiresAt = new Date(
-      Date.now() + ttl * 1000
-    ).toISOString();
+    expiresAt = new Date(Date.now() + ttl * 1000).toISOString();
   }
 
   const id = randomUUID();
 
-  // Encrypt
+  // Encrypt the message
   const { ciphertext, iv, tag } = encrypt(message, MASTER_KEY);
 
+  // Insert into Supabase
   const { error } = await supabase.from("messages").insert([
     {
       id,
@@ -56,6 +56,6 @@ export default async function handler(
   }
 
   res.status(200).json({
-    link: `/message/${id}`,
+    link: `${PUBLIC_HOST}/message/${id}`,
   });
 }

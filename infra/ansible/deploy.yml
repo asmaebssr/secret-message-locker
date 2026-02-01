@@ -1,8 +1,16 @@
 - hosts: app
   become: true
+  collections:
+    - community.docker
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    docker_host: unix:///var/run/docker.sock
 
   tasks:
+    # -------------------------
     # SYSTEM SETUP
+    # -------------------------
     - name: Update apt cache
       apt:
         update_cache: yes
@@ -30,20 +38,26 @@
         groups: docker
         append: yes
 
-    # DOCKER SETUP
+    # -------------------------
+    # DOCKER SDK
+    # -------------------------
     - name: Install Docker SDK for Python
       pip:
         name: docker
+        executable: pip3
 
+    # -------------------------
     # APPLICATION DEPLOYMENT
+    # -------------------------
     - name: Pull Secret Message Locker image
-      docker_image:
+      community.docker.docker_image:
         name: mikassaa/secret-message-locker
         tag: latest
         source: pull
+        docker_host: "{{ docker_host }}"
 
     - name: Run Secret Message Locker container
-      docker_container:
+      community.docker.docker_container:
         name: secret-message-app
         image: mikassaa/secret-message-locker:latest
         state: started
@@ -51,6 +65,9 @@
         ports:
           - "3000:3000"
         env:
-          NEXT_PUBLIC_SUPABASE_URL: "{{ supabase_url }}"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "{{ supabase_anon_key }}"
+          SUPABASE_URL: "{{ supabase_url }}"
+          SUPABASE_ANON_KEY: "{{ supabase_anon_key }}"
           MASTER_KEY: "{{ master_key }}"
+          NEXT_PUBLIC_HOST: "{{ next_public_host }}"
+        docker_host: "{{ docker_host }}"
+        

@@ -1,0 +1,4 @@
+- name: ZAP DAST scan
+  uses: zaproxy/action-baseline@v0.11.0
+  with:
+    target: http://13.62.101.140:3000
